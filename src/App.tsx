@@ -1,35 +1,71 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { useEffect, useState } from 'react';
+import { getExpenses } from './services/expenseApi';
+import type { Expense } from './types/expense';
+import './App.css';
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [expenses, setExpenses] = useState<Expense[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchExpenses = async () => {
+      try {
+        setLoading(true);
+        const data = await getExpenses();
+        setExpenses(data);
+        setError(null);
+      } catch (err) {
+        setError('Failed to fetch expenses. Is the backend running?');
+        console.error('Error fetching expenses:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchExpenses();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="app">
+        <h1>Expense Tracker</h1>
+        <p>Loading expenses...</p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="app">
+        <h1>Expense Tracker</h1>
+        <p style={{ color: 'red' }}>{error}</p>
+      </div>
+    );
+  }
 
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+    <div className="app">
+      <h1>Expense Tracker</h1>
+      <p>Total Expenses: {expenses.length}</p>
+
+      {expenses.length === 0 ? (
+        <p>No expenses found. Create one to get started!</p>
+      ) : (
+        <ul style={{ textAlign: 'left', maxWidth: '600px', margin: '0 auto' }}>
+          {expenses.map((expense) => (
+            <li key={expense.id} style={{ marginBottom: '20px', padding: '10px', border: '1px solid #ccc', borderRadius: '5px' }}>
+              <strong>{expense.description}</strong> - ${expense.amount}
+              <br />
+              <small>Category: {expense.category}</small>
+              <br />
+              <small>Date: {new Date(expense.expenseDate).toLocaleDateString()}</small>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
 }
 
-export default App
+export default App;
