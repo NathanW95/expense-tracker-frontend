@@ -52,6 +52,11 @@ function App() {
     setEditingExpense(null);
   };
 
+  const handleLogout = () => {
+    logout();
+    setShowRegister(false); // Always return to login page
+  };
+
   return (
     <div className="app">
       <header style={{
@@ -113,7 +118,7 @@ function App() {
         justifyContent: 'center',
       }}>
         <button
-          onClick={logout}
+          onClick={handleLogout}
           style={{
             padding: '10px 40px',
             backgroundColor: '#dc3545',
