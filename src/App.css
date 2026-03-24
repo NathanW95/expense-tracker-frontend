@@ -1,19 +1,21 @@
 #root {
   max-width: 1280px;
   margin: 0 auto;
-  padding: 2rem;
+  padding: 0;
   text-align: center;
 }
 
 .app {
-  max-width: 800px;
-  margin: 0 auto;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   padding: 20px;
 }
 
 h1 {
   color: #646cff;
-  margin-bottom: 20px;
+  margin: 0 0 20px 0;
 }
 
 ul {
