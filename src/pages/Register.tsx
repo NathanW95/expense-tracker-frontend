@@ -16,12 +16,26 @@ export function Register({ onSwitchToLogin }: RegisterProps) {
     lastName: '',
     teamName: '',
   });
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setError(null);
+
+    // Validate passwords match
+    if (formData.password !== confirmPassword) {
+      setError('Passwords do not match');
+      return;
+    }
+
+    // Validate password length
+    if (formData.password.length < 8) {
+      setError('Password must be at least 8 characters');
+      return;
+    }
+
     setIsLoading(true);
 
     try {
@@ -137,6 +151,31 @@ export function Register({ onSwitchToLogin }: RegisterProps) {
               color: 'white',
               boxSizing: 'border-box',
             }}
+            placeholder="At least 8 characters"
+          />
+        </div>
+
+        <div style={{ marginBottom: '15px' }}>
+          <label htmlFor="confirmPassword" style={{ display: 'block', marginBottom: '5px', color: 'white' }}>
+            Confirm Password
+          </label>
+          <input
+            id="confirmPassword"
+            type="password"
+            required
+            value={confirmPassword}
+            onChange={(e) => setConfirmPassword(e.target.value)}
+            style={{
+              width: '100%',
+              padding: '10px',
+              fontSize: '14px',
+              backgroundColor: '#2a2a2a',
+              border: '1px solid #444',
+              borderRadius: '6px',
+              color: 'white',
+              boxSizing: 'border-box',
+            }}
+            placeholder="Re-enter your password"
           />
         </div>
 
