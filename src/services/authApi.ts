@@ -1,4 +1,4 @@
-import axios from 'axios';
+import api from './api';
 import type {
   AuthResponse,
   LoginRequest,
@@ -8,13 +8,6 @@ import type {
   User,
   MessageResponse,
 } from '../types/auth';
-
-const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL,
-  headers: {
-    'Content-Type': 'application/json',
-  },
-});
 
 /**
  * Register a new user account
@@ -38,14 +31,10 @@ export const login = async (credentials: LoginRequest): Promise<AuthResponse> =>
 /**
  * Get current authenticated user
  * GET /api/auth/me
- * Requires Authorization header with Bearer token
+ * Token automatically added by interceptor
  */
-export const getCurrentUser = async (token: string): Promise<User> => {
-  const response = await api.get<User>('/api/auth/me', {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  });
+export const getCurrentUser = async (): Promise<User> => {
+  const response = await api.get<User>('/api/auth/me');
   return response.data;
 };
 

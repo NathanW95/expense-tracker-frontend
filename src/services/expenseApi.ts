@@ -1,13 +1,5 @@
-import axios from 'axios';
+import api from './api';
 import type { Expense, ExpenseRequest } from '../types/expense';
-
-
-const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL,
-  headers: {
-    'Content-Type': 'application/json',
-  },
-});
 
 
 export const getExpenses = async (): Promise<Expense[]> => {

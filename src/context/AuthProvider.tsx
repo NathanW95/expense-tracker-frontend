@@ -19,7 +19,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
       const storedToken = localStorage.getItem('token');
       if (storedToken) {
         try {
-          const userData = await getCurrentUser(storedToken);
+          // Token is automatically added by interceptor
+          const userData = await getCurrentUser();
           setUser(userData);
           setToken(storedToken);
         } catch (error) {
