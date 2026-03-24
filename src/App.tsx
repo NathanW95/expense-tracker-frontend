@@ -2,11 +2,17 @@ import { useState } from 'react';
 import { useAuth } from './hooks/useAuth';
 import { Login } from './pages/Login';
 import { Register } from './pages/Register';
+import { ExpenseList } from './components/ExpenseList';
+import { ExpenseForm } from './components/ExpenseForm';
+import type { Expense } from './types/expense';
 import './App.css';
 
 function App() {
   const { user, isAuthenticated, logout, isLoading } = useAuth();
   const [showRegister, setShowRegister] = useState(false);
+  const [showForm, setShowForm] = useState(false);
+  const [editingExpense, setEditingExpense] = useState<Expense | null>(null);
+  const [refreshKey, setRefreshKey] = useState(0);
 
   if (isLoading) {
     return (
@@ -30,37 +36,97 @@ function App() {
     );
   }
 
+  const handleFormSuccess = () => {
+    setShowForm(false);
+    setEditingExpense(null);
+    setRefreshKey((prev) => prev + 1); // Refresh expense list
+  };
+
+  const handleEdit = (expense: Expense) => {
+    setEditingExpense(expense);
+    setShowForm(true);
+  };
+
+  const handleCancel = () => {
+    setShowForm(false);
+    setEditingExpense(null);
+  };
+
   return (
     <div className="app">
-      <h1>Expense Tracker</h1>
-
-      <div style={{
+      <header style={{
         display: 'flex',
-        justifyContent: 'space-between',
+        justifyContent: 'center',
         alignItems: 'center',
         width: '100%',
-        maxWidth: '800px',
+        maxWidth: '1200px',
         marginBottom: '30px',
+        padding: '20px',
+        borderBottom: '2px solid #333',
       }}>
-        <span>
-          Welcome, {user?.firstName} {user?.lastName}! ({user?.role})
-        </span>
+        <div style={{ textAlign: 'center' }}>
+          <h1 style={{ margin: 0, color: 'white' }}>Expense Tracker</h1>
+          <p style={{ margin: '5px 0 0 0', color: '#888' }}>
+            Welcome, {user?.firstName} {user?.lastName}! ({user?.role})
+          </p>
+        </div>
+      </header>
+
+      <div style={{ width: '100%', maxWidth: '1200px', flex: 1 }}>
+        {!showForm && (
+          <button
+            onClick={() => setShowForm(true)}
+            style={{
+              padding: '12px 24px',
+              backgroundColor: '#007bff',
+              color: 'white',
+              border: 'none',
+              borderRadius: '8px',
+              cursor: 'pointer',
+              fontWeight: 'bold',
+              marginBottom: '20px',
+              fontSize: '16px',
+            }}
+          >
+            Create New Expense
+          </button>
+        )}
+
+        {showForm && (
+          <ExpenseForm
+            onSuccess={handleFormSuccess}
+            onCancel={handleCancel}
+            editExpense={editingExpense}
+          />
+        )}
+
+        <ExpenseList key={refreshKey} onEdit={handleEdit} />
+      </div>
+
+      <footer style={{
+        width: '100%',
+        maxWidth: '1200px',
+        padding: '20px',
+        marginTop: '40px',
+        borderTop: '2px solid #333',
+        display: 'flex',
+        justifyContent: 'center',
+      }}>
         <button
           onClick={logout}
           style={{
-            padding: '8px 16px',
+            padding: '10px 40px',
             backgroundColor: '#dc3545',
             color: 'white',
             border: 'none',
-            borderRadius: '4px',
+            borderRadius: '8px',
             cursor: 'pointer',
+            fontWeight: 'bold',
           }}
         >
           Logout
         </button>
-      </div>
-
-      <p>Expense features coming soon...</p>
+      </footer>
     </div>
   );
 }
