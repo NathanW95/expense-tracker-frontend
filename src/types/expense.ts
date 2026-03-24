@@ -1,10 +1,15 @@
 export interface Expense {
     id: number;
-    description: string;
-    category: string;
+    description: string | null;
+    category: string | null;
     amount: number;
-    expenseDate: string;
-    dateAdded: string;
+    expenseDate: string | null;
+    dateAdded: string | null;
+    userId: number;
+    userFirstName: string;
+    userLastName: string;
+    status: 'PENDING' | 'APPROVED' | 'REJECTED';
+    teamId: number | null;
 }
 
 export interface ExpenseRequest {
