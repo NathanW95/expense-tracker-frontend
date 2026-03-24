@@ -31,6 +31,11 @@ export const deleteExpense = async (id: number): Promise<void> => {
   await api.delete(`/expenses/${id}`);
 };
 
+export const approveExpense = async (id: number, status: 'APPROVED' | 'REJECTED'): Promise<Expense> => {
+  const response = await api.put<Expense>(`/expenses/${id}/approve`, { status });
+  return response.data;
+};
+
 
 export const getTotalAmount = async (): Promise<number> => {
   const response = await api.get<number>('/expenses/total-amount/');

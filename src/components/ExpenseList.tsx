@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { getExpenses, deleteExpense } from '../services/expenseApi';
+import { getExpenses, deleteExpense, approveExpense } from '../services/expenseApi';
 import type { Expense } from '../types/expense';
 import { useAuth } from '../hooks/useAuth';
 
@@ -40,6 +40,28 @@ export function ExpenseList({ onEdit }: ExpenseListProps) {
     } catch (err) {
       const error = err as { response?: { data?: { message?: string } } };
       alert(error.response?.data?.message || 'Failed to delete expense');
+    }
+  };
+
+  const handleApprove = async (id: number) => {
+    try {
+      const updated = await approveExpense(id, 'APPROVED');
+      setExpenses(expenses.map((e) => (e.id === id ? updated : e)));
+    } catch (err) {
+      const error = err as { response?: { data?: { message?: string } } };
+      alert(error.response?.data?.message || 'Failed to approve expense');
+    }
+  };
+
+  const handleReject = async (id: number) => {
+    if (!confirm('Are you sure you want to reject this expense?')) return;
+
+    try {
+      const updated = await approveExpense(id, 'REJECTED');
+      setExpenses(expenses.map((e) => (e.id === id ? updated : e)));
+    } catch (err) {
+      const error = err as { response?: { data?: { message?: string } } };
+      alert(error.response?.data?.message || 'Failed to reject expense');
     }
   };
 
@@ -234,6 +256,46 @@ export function ExpenseList({ onEdit }: ExpenseListProps) {
                   </button>
                 </div>
               )}
+
+              {/* Manager/Admin Approve/Reject Buttons */}
+              {(user?.role === 'MANAGER' || user?.role === 'ADMIN') &&
+                expense.status === 'PENDING' &&
+                expense.userId !== user?.id && (
+                  <div style={{ display: 'flex', gap: '8px', marginTop: '8px' }}>
+                    <button
+                      onClick={() => handleApprove(expense.id)}
+                      style={{
+                        flex: 1,
+                        padding: '10px',
+                        backgroundColor: '#28a745',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '8px',
+                        cursor: 'pointer',
+                        fontSize: '14px',
+                        fontWeight: '600',
+                      }}
+                    >
+                      Approve
+                    </button>
+                    <button
+                      onClick={() => handleReject(expense.id)}
+                      style={{
+                        flex: 1,
+                        padding: '10px',
+                        backgroundColor: '#dc3545',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '8px',
+                        cursor: 'pointer',
+                        fontSize: '14px',
+                        fontWeight: '600',
+                      }}
+                    >
+                      Reject
+                    </button>
+                  </div>
+                )}
             </div>
           ))}
         </div>
