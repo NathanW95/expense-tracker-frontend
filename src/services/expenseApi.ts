@@ -2,8 +2,14 @@ import api from './api';
 import type { Expense, ExpenseRequest } from '../types/expense';
 
 
-export const getExpenses = async (): Promise<Expense[]> => {
-  const response = await api.get<Expense[]>('/expenses/');
+export const getExpenses = async (view?: 'team' | 'all' | 'personal'): Promise<Expense[]> => {
+  const params = view ? { view } : {};
+  const response = await api.get<Expense[]>('/expenses/', { params });
+  return response.data;
+};
+
+export const getAllExpensesAdmin = async (): Promise<Expense[]> => {
+  const response = await api.get<Expense[]>('/api/admin/expenses');
   return response.data;
 };
 

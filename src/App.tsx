@@ -88,13 +88,16 @@ function App() {
         width: '100%',
         maxWidth: '1200px',
         marginBottom: '30px',
-        padding: '20px',
+        padding: '20px 20px 30px 20px',
         borderBottom: '2px solid #333',
       }}>
         <div style={{ textAlign: 'center' }}>
           <h1 style={{ margin: 0, color: 'white' }}>Expense Tracker</h1>
           <p style={{ margin: '5px 0 0 0', color: '#888' }}>
-            Welcome, {user?.firstName} {user?.lastName}! ({user?.role})
+            Welcome, {user?.firstName} {user?.lastName}!
+          </p>
+          <p style={{ margin: '5px 0 5px 0', color: '#666', fontSize: '14px' }}>
+            ({user?.role})
           </p>
         </div>
       </header>
@@ -111,7 +114,7 @@ function App() {
               borderRadius: '8px',
               cursor: 'pointer',
               fontWeight: 'bold',
-              marginBottom: '20px',
+              marginBottom: '30px',
               fontSize: '16px',
             }}
           >
@@ -126,6 +129,13 @@ function App() {
             editExpense={editingExpense}
           />
         )}
+
+        {/* Separator between form and expense list */}
+        <div style={{
+          borderTop: '2px solid #333',
+          marginTop: showForm ? '30px' : '0px',
+          marginBottom: '30px',
+        }} />
 
         <ExpenseList key={refreshKey} onEdit={handleEdit} />
       </div>
