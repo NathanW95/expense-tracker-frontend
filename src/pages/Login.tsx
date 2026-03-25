@@ -143,6 +143,21 @@ export function Login({ onSwitchToRegister }: LoginProps) {
           Register here
         </button>
       </p>
+
+      <p style={{ marginTop: '10px', textAlign: 'center' }}>
+        <a
+          href="/forgot-password"
+          style={{
+            color: '#888',
+            textDecoration: 'none',
+            fontSize: '13px',
+          }}
+          onMouseEnter={(e) => (e.currentTarget.style.color = '#007bff')}
+          onMouseLeave={(e) => (e.currentTarget.style.color = '#888')}
+        >
+          Forgot your password?
+        </a>
+      </p>
     </div>
   );
 }

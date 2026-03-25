@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { useAuth } from './hooks/useAuth';
 import { Login } from './pages/Login';
 import { Register } from './pages/Register';
+import { ForgotPassword } from './pages/ForgotPassword';
+import { ResetPassword } from './pages/ResetPassword';
 import { ExpenseList } from './components/ExpenseList';
 import { ExpenseForm } from './components/ExpenseForm';
 import type { Expense } from './types/expense';
@@ -14,6 +16,16 @@ function App() {
   const [editingExpense, setEditingExpense] = useState<Expense | null>(null);
   const [refreshKey, setRefreshKey] = useState(0);
 
+  // Determine initial page based on URL
+  const [currentPage] = useState(() => {
+    const path = window.location.pathname;
+    const search = window.location.search;
+
+    if (path === '/forgot-password') return 'forgot-password';
+    if (path === '/reset-password' || search.includes('token=')) return 'reset-password';
+    return 'login';
+  });
+
   if (isLoading) {
     return (
       <div className="app">
@@ -21,6 +33,16 @@ function App() {
         <p>Loading...</p>
       </div>
     );
+  }
+
+  // Show forgot password page
+  if (currentPage === 'forgot-password') {
+    return <ForgotPassword />;
+  }
+
+  // Show reset password page
+  if (currentPage === 'reset-password') {
+    return <ResetPassword />;
   }
 
   if (!isAuthenticated) {
