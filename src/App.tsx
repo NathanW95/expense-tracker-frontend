@@ -6,14 +6,12 @@ import { ForgotPassword } from './pages/ForgotPassword';
 import { ResetPassword } from './pages/ResetPassword';
 import { ExpenseList } from './components/ExpenseList';
 import { ExpenseForm } from './components/ExpenseForm';
-import type { Expense } from './types/expense';
 import './App.css';
 
 function App() {
   const { user, isAuthenticated, logout, isLoading } = useAuth();
   const [showRegister, setShowRegister] = useState(false);
   const [showForm, setShowForm] = useState(false);
-  const [editingExpense, setEditingExpense] = useState<Expense | null>(null);
   const [refreshKey, setRefreshKey] = useState(0);
 
   // Determine initial page based on URL
@@ -60,18 +58,11 @@ function App() {
 
   const handleFormSuccess = () => {
     setShowForm(false);
-    setEditingExpense(null);
     setRefreshKey((prev) => prev + 1); // Refresh expense list
-  };
-
-  const handleEdit = (expense: Expense) => {
-    setEditingExpense(expense);
-    setShowForm(true);
   };
 
   const handleCancel = () => {
     setShowForm(false);
-    setEditingExpense(null);
   };
 
   const handleLogout = () => {
@@ -126,7 +117,7 @@ function App() {
           <ExpenseForm
             onSuccess={handleFormSuccess}
             onCancel={handleCancel}
-            editExpense={editingExpense}
+            editExpense={null}
           />
         )}
 
@@ -137,7 +128,7 @@ function App() {
           marginBottom: '30px',
         }} />
 
-        <ExpenseList key={refreshKey} onEdit={handleEdit} />
+        <ExpenseList key={refreshKey} />
       </div>
 
       <footer style={{

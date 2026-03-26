@@ -4,12 +4,9 @@ import type { Expense } from '../types/expense';
 import { useAuth } from '../hooks/useAuth';
 import { StatCard } from './StatCard';
 import { QuarterlyBudgetCard } from './QuarterlyBudgetCard';
+import { ExpenseForm } from './ExpenseForm';
 
-interface ExpenseListProps {
-  onEdit?: (expense: Expense) => void;
-}
-
-export function ExpenseList({ onEdit }: ExpenseListProps) {
+export function ExpenseList() {
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [loading, setLoading] = useState(true);
   const [initialLoad, setInitialLoad] = useState(true);
@@ -20,6 +17,7 @@ export function ExpenseList({ onEdit }: ExpenseListProps) {
   const [personFilter, setPersonFilter] = useState<number | 'ALL'>('ALL');
   const [sortBy, setSortBy] = useState<'status' | 'date' | 'amount'>('status');
   const [selectedExpense, setSelectedExpense] = useState<Expense | null>(null);
+  const [editingExpense, setEditingExpense] = useState<Expense | null>(null);
   const { user } = useAuth();
 
   // Stats open by default for managers/admins, closed for users
@@ -669,7 +667,10 @@ export function ExpenseList({ onEdit }: ExpenseListProps) {
               {expense.userId === user?.id && expense.status === 'PENDING' && (
                 <div style={{ display: 'flex', gap: '8px', marginTop: '8px' }}>
                   <button
-                    onClick={() => onEdit?.(expense)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setEditingExpense(expense);
+                    }}
                     style={{
                       flex: 1,
                       padding: '10px',
@@ -951,6 +952,71 @@ export function ExpenseList({ onEdit }: ExpenseListProps) {
                   </button>
                 </div>
               )}
+          </div>
+        </div>
+      )}
+
+      {/* Edit Expense Modal */}
+      {editingExpense && (
+        <div
+          onClick={() => setEditingExpense(null)}
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            zIndex: 1000,
+          }}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              backgroundColor: '#1e1e1e',
+              borderRadius: '12px',
+              padding: '30px',
+              maxWidth: '600px',
+              width: '90%',
+              maxHeight: '90vh',
+              overflow: 'auto',
+              position: 'relative',
+              border: '1px solid #333',
+              boxShadow: '0 8px 32px rgba(0,0,0,0.5)',
+            }}
+          >
+            {/* Close Button */}
+            <button
+              onClick={() => setEditingExpense(null)}
+              style={{
+                position: 'absolute',
+                top: '-5px',
+                right: '5px',
+                backgroundColor: 'transparent',
+                color: '#dc3545',
+                border: 'none',
+                fontSize: '36px',
+                cursor: 'pointer',
+                fontWeight: 'bold',
+                lineHeight: '1',
+                padding: '0',
+              }}
+            >
+              ×
+            </button>
+
+            {/* ExpenseForm in Modal */}
+            <ExpenseForm
+              onSuccess={() => {
+                setEditingExpense(null);
+                loadExpenses();
+              }}
+              onCancel={() => setEditingExpense(null)}
+              editExpense={editingExpense}
+            />
           </div>
         </div>
       )}
