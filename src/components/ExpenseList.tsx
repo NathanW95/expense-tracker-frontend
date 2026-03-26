@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { getExpenses, deleteExpense, approveExpense, getAllExpensesAdmin } from '../services/expenseApi';
+import { getTeams, type Team } from '../services/teamApi';
 import type { Expense } from '../types/expense';
 import { useAuth } from '../hooks/useAuth';
 import { StatCard } from './StatCard';
@@ -8,6 +9,7 @@ import { ExpenseForm } from './ExpenseForm';
 
 export function ExpenseList() {
   const [expenses, setExpenses] = useState<Expense[]>([]);
+  const [teams, setTeams] = useState<Team[]>([]);
   const [loading, setLoading] = useState(true);
   const [initialLoad, setInitialLoad] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -24,6 +26,19 @@ export function ExpenseList() {
   const [showStats, setShowStats] = useState(() => user?.role === 'MANAGER' || user?.role === 'ADMIN');
 
   const [monthlyBudget] = useState<number>(1000); // Fixed budget of $1000 per person
+
+  // Load teams on mount
+  useEffect(() => {
+    const fetchTeams = async () => {
+      try {
+        const teamData = await getTeams();
+        setTeams(teamData);
+      } catch (err) {
+        console.error('Failed to load teams:', err);
+      }
+    };
+    fetchTeams();
+  }, []);
 
   const loadExpenses = useCallback(async () => {
     try {
@@ -60,6 +75,11 @@ export function ExpenseList() {
   useEffect(() => {
     loadExpenses();
   }, [view, loadExpenses]);
+
+  // Reset personFilter when teamFilter changes (cascading filter)
+  useEffect(() => {
+    setPersonFilter('ALL');
+  }, [teamFilter]);
 
   const calculateStats = useMemo(() => {
     // Calculate which quarter we're in
@@ -428,9 +448,14 @@ export function ExpenseList() {
                   }}
                 >
                   <option value="ALL">All Teams</option>
-                  {uniqueTeams.map(teamId => (
-                    <option key={teamId} value={teamId}>Team {teamId}</option>
-                  ))}
+                  {uniqueTeams.map(teamId => {
+                    const team = teams.find(t => t.id === teamId);
+                    return (
+                      <option key={teamId} value={teamId}>
+                        {team ? team.name : `Team ${teamId}`}
+                      </option>
+                    );
+                  })}
                 </select>
               </div>
             );
@@ -438,9 +463,14 @@ export function ExpenseList() {
 
           {/* Filter by User (Admin/Manager in team/all views) */}
           {(user?.role === 'ADMIN' || user?.role === 'MANAGER') && view !== 'my' && (() => {
+            // Filter users based on team filter (if team is selected)
+            const filteredByTeam = teamFilter !== 'ALL'
+              ? expenses.filter(e => e.teamId === teamFilter)
+              : expenses;
+
             const uniqueUsers = Array.from(
               new Set(
-                expenses
+                filteredByTeam
                   .filter(e => e.userId && e.userFirstName && e.userLastName)
                   .map(e => JSON.stringify({ id: e.userId, name: `${e.userFirstName} ${e.userLastName}` }))
               )
