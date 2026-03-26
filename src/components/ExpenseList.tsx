@@ -19,6 +19,7 @@ export function ExpenseList({ onEdit }: ExpenseListProps) {
   const [teamFilter, setTeamFilter] = useState<number | 'ALL'>('ALL');
   const [personFilter, setPersonFilter] = useState<number | 'ALL'>('ALL');
   const [sortBy, setSortBy] = useState<'status' | 'date' | 'amount'>('status');
+  const [selectedExpense, setSelectedExpense] = useState<Expense | null>(null);
   const { user } = useAuth();
 
   // Stats open by default for managers/admins, closed for users
@@ -304,7 +305,7 @@ export function ExpenseList({ onEdit }: ExpenseListProps) {
       </div>
 
       {/* Separator line */}
-      <div style={{ borderTop: '2px solid #333', marginBottom: '30px' }} />
+      <div style={{ borderTop: '2px solid #333', marginBottom: '30px', marginTop: '0' }} />
 
       <h2 style={{ color: 'white', marginBottom: '20px' }}>
         {view === 'my' ? 'My Expenses' : view === 'team' ? 'Team Expenses' : 'All Expenses'}
@@ -549,6 +550,7 @@ export function ExpenseList({ onEdit }: ExpenseListProps) {
                 padding: '20px',
                 boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
                 transition: 'transform 0.2s, box-shadow 0.2s',
+                position: 'relative',
               }}
               onMouseEnter={(e) => {
                 e.currentTarget.style.transform = 'translateY(-4px)';
@@ -559,7 +561,6 @@ export function ExpenseList({ onEdit }: ExpenseListProps) {
                 e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.3)';
               }}
             >
-              {/* Header: Category + Status */}
               <div
                 style={{
                   display: 'flex',
@@ -637,6 +638,30 @@ export function ExpenseList({ onEdit }: ExpenseListProps) {
                   }}
                 >
                   👤 {expense.userFirstName} {expense.userLastName}
+                </div>
+              )}
+
+              {/* View Receipt Button */}
+              {expense.receiptUrl && (
+                <div style={{ display: 'flex', justifyContent: 'center', marginTop: '12px', marginBottom: '8px' }}>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setSelectedExpense(expense);
+                    }}
+                    style={{
+                      padding: '8px 16px',
+                      backgroundColor: '#6c757d',
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: '6px',
+                      cursor: 'pointer',
+                      fontSize: '13px',
+                      fontWeight: 'bold',
+                    }}
+                  >
+                    📎 View Receipt
+                  </button>
                 </div>
               )}
 
@@ -722,6 +747,213 @@ export function ExpenseList({ onEdit }: ExpenseListProps) {
         </div>
         );
       })()}
+
+      {/* Receipt Modal */}
+      {selectedExpense && selectedExpense.receiptUrl && (
+        <div
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: 'rgba(0,0,0,0.9)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 1000,
+            padding: '20px',
+          }}
+          onClick={() => setSelectedExpense(null)}
+        >
+          <div
+            style={{
+              backgroundColor: '#1e1e1e',
+              borderRadius: '12px',
+              padding: '30px',
+              maxWidth: '800px',
+              width: '100%',
+              maxHeight: '90vh',
+              overflow: 'auto',
+              position: 'relative',
+              border: '1px solid #333',
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Close Button */}
+            <button
+              onClick={() => setSelectedExpense(null)}
+              style={{
+                position: 'absolute',
+                top: '-5px',
+                right: '5px',
+                backgroundColor: 'transparent',
+                color: '#dc3545',
+                border: 'none',
+                cursor: 'pointer',
+                fontSize: '34px',
+                fontWeight: 'bold',
+                lineHeight: 1,
+                padding: 0,
+              }}
+            >
+              ×
+            </button>
+
+            {/* Header: Category + Status */}
+            <div
+              style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                marginBottom: '12px',
+                marginTop: '30px',
+              }}
+            >
+              <span
+                style={{
+                  color: '#888',
+                  fontSize: '15px',
+                  fontWeight: '700',
+                  textTransform: 'uppercase',
+                }}
+              >
+                {selectedExpense.category}
+              </span>
+              <span
+                style={{
+                  padding: '6px 12px',
+                  borderRadius: '12px',
+                  backgroundColor: getStatusColor(selectedExpense.status),
+                  color: 'white',
+                  fontSize: '13px',
+                  fontWeight: 'bold',
+                }}
+              >
+                {selectedExpense.status}
+              </span>
+            </div>
+
+            {/* Description as Title */}
+            <h3
+              style={{
+                color: 'white',
+                fontSize: '22px',
+                margin: '0 0 12px 0',
+                fontWeight: '700',
+                textAlign: 'center',
+              }}
+            >
+              {selectedExpense.description}
+            </h3>
+
+            {/* Amount */}
+            <div
+              style={{
+                fontSize: '32px',
+                fontWeight: 'bold',
+                color: '#4CAF50',
+                marginBottom: '12px',
+                textAlign: 'center',
+              }}
+            >
+              {formatAmount(selectedExpense.amount)}
+            </div>
+
+            {/* Date */}
+            <div
+              style={{
+                color: '#888',
+                fontSize: '14px',
+                marginBottom: '12px',
+                textAlign: 'center',
+              }}
+            >
+              {formatDate(selectedExpense.expenseDate)}
+            </div>
+
+            {/* Submitted By (for managers/admins) */}
+            {user?.role !== 'USER' && (
+              <div
+                style={{
+                  color: '#888',
+                  fontSize: '14px',
+                  marginBottom: '20px',
+                  textAlign: 'center',
+                }}
+              >
+                👤 {selectedExpense.userFirstName} {selectedExpense.userLastName}
+              </div>
+            )}
+
+            {/* Divider */}
+            <div style={{ borderTop: '1px solid #333', margin: '20px 0' }} />
+
+            {/* Receipt Image */}
+            <div style={{ marginBottom: '20px' }}>
+              <h4 style={{ color: 'white', marginBottom: '15px', textAlign: 'center' }}>Receipt</h4>
+              <img
+                src={selectedExpense.receiptUrl}
+                alt="Receipt"
+                style={{
+                  maxWidth: '100%',
+                  maxHeight: '400px',
+                  borderRadius: '8px',
+                  border: '1px solid #444',
+                  display: 'block',
+                  margin: '0 auto',
+                }}
+              />
+            </div>
+
+            {/* Approve/Reject Buttons for Managers/Admins */}
+            {(user?.role === 'MANAGER' || user?.role === 'ADMIN') &&
+              selectedExpense.status === 'PENDING' &&
+              selectedExpense.userId !== user?.id && (
+                <div style={{ display: 'flex', gap: '12px', marginTop: '20px' }}>
+                  <button
+                    onClick={() => {
+                      handleReject(selectedExpense.id);
+                      setSelectedExpense(null);
+                    }}
+                    style={{
+                      flex: 1,
+                      padding: '12px',
+                      backgroundColor: '#dc3545',
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: '8px',
+                      cursor: 'pointer',
+                      fontSize: '16px',
+                      fontWeight: 'bold',
+                    }}
+                  >
+                    Reject
+                  </button>
+                  <button
+                    onClick={() => {
+                      handleApprove(selectedExpense.id);
+                      setSelectedExpense(null);
+                    }}
+                    style={{
+                      flex: 1,
+                      padding: '12px',
+                      backgroundColor: '#28a745',
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: '8px',
+                      cursor: 'pointer',
+                      fontSize: '16px',
+                      fontWeight: 'bold',
+                    }}
+                  >
+                    Approve
+                  </button>
+                </div>
+              )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

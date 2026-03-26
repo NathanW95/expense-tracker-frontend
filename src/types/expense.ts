@@ -10,6 +10,7 @@ export interface Expense {
     userLastName: string;
     status: 'PENDING' | 'APPROVED' | 'REJECTED';
     teamId: number | null;
+    receiptUrl: string | null;
 }
 
 export interface ExpenseRequest {
@@ -17,4 +18,5 @@ export interface ExpenseRequest {
     category: string;
     amount: number;
     expenseDate: string;
+    receiptUrl?: string | null;
 }

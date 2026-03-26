@@ -2,6 +2,17 @@ import { useState } from 'react';
 import { createExpense, updateExpense } from '../services/expenseApi';
 import type { ExpenseRequest, Expense } from '../types/expense';
 
+// Extend Window interface for Cloudinary
+declare global {
+  interface Window {
+    cloudinary: {
+      createUploadWidget: (config: object, callback: (error: Error | null, result: { event: string; info: { secure_url: string } }) => void) => {
+        open: () => void;
+      };
+    };
+  }
+}
+
 interface ExpenseFormProps {
   onSuccess: () => void;
   onCancel: () => void;
@@ -17,10 +28,45 @@ export function ExpenseForm({ onSuccess, onCancel, editExpense }: ExpenseFormPro
       ? new Date(editExpense.expenseDate).toISOString().split('T')[0]
       : new Date().toISOString().split('T')[0],
   });
+  const [receiptUrl, setReceiptUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const categories = ['Food', 'Travel', 'Equipment', 'Entertainment', 'Other'];
+
+  const openCloudinaryWidget = () => {
+    const cloudName = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
+    const uploadPreset = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET;
+
+    if (!cloudName || !uploadPreset) {
+      setError('Cloudinary not configured. Check environment variables.');
+      return;
+    }
+
+    const widget = window.cloudinary.createUploadWidget(
+      {
+        cloudName: cloudName,
+        uploadPreset: uploadPreset,
+        sources: ['local', 'camera'],
+        multiple: false,
+        maxFileSize: 5000000, // 5MB
+        clientAllowedFormats: ['jpg', 'jpeg', 'png', 'gif', 'pdf'],
+        folder: 'receipts',
+      },
+      (error: Error | null, result: { event: string; info: { secure_url: string } }) => {
+        if (error) {
+          setError('Upload failed: ' + error.message);
+          return;
+        }
+        if (result.event === 'success') {
+          setReceiptUrl(result.info.secure_url);
+          console.log('Receipt uploaded:', result.info.secure_url);
+        }
+      }
+    );
+
+    widget.open();
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -33,12 +79,14 @@ export function ExpenseForm({ onSuccess, onCancel, editExpense }: ExpenseFormPro
         await updateExpense(editExpense.id, {
           ...formData,
           expenseDate: new Date(formData.expenseDate).toISOString(),
+          receiptUrl: receiptUrl,
         });
       } else {
         // Create new expense
         await createExpense({
           ...formData,
           expenseDate: new Date(formData.expenseDate).toISOString(),
+          receiptUrl: receiptUrl,
         });
       }
       onSuccess();
@@ -181,6 +229,62 @@ export function ExpenseForm({ onSuccess, onCancel, editExpense }: ExpenseFormPro
               boxSizing: 'border-box',
             }}
           />
+        </div>
+
+        <div style={{ marginBottom: '20px' }}>
+          <label style={{ display: 'block', marginBottom: '5px', fontWeight: 'bold', color: 'white' }}>
+            Receipt
+          </label>
+          <button
+            type="button"
+            onClick={openCloudinaryWidget}
+            disabled={loading}
+            style={{
+              padding: '10px 20px',
+              backgroundColor: '#007bff',
+              color: 'white',
+              border: 'none',
+              borderRadius: '6px',
+              cursor: loading ? 'not-allowed' : 'pointer',
+              fontWeight: 'bold',
+              fontSize: '14px',
+              marginBottom: '10px',
+            }}
+          >
+            {receiptUrl ? 'Change Receipt' : 'Upload Receipt'}
+          </button>
+          {receiptUrl && (
+            <div style={{ marginTop: '10px', textAlign: 'center' }}>
+              <img
+                src={receiptUrl}
+                alt="Receipt preview"
+                style={{
+                  maxWidth: '200px',
+                  maxHeight: '200px',
+                  borderRadius: '6px',
+                  border: '1px solid #444',
+                  display: 'block',
+                  margin: '0 auto',
+                }}
+              />
+              <button
+                type="button"
+                onClick={() => setReceiptUrl(null)}
+                style={{
+                  marginTop: '10px',
+                  padding: '5px 10px',
+                  backgroundColor: '#dc3545',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '4px',
+                  cursor: 'pointer',
+                  fontSize: '12px',
+                }}
+              >
+                Remove Receipt
+              </button>
+            </div>
+          )}
         </div>
 
         <div style={{ display: 'flex', gap: '10px', justifyContent: 'center' }}>
