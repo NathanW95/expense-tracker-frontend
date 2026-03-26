@@ -55,3 +55,15 @@ export const resetPassword = async (data: ResetPasswordRequest): Promise<Message
   const response = await api.post<MessageResponse>('/api/auth/reset-password', data);
   return response.data;
 };
+
+/**
+ * Update user profile (first name, last name)
+ * PUT /api/auth/me
+ */
+export const updateProfile = async (data: {
+  firstName: string;
+  lastName: string;
+}): Promise<User> => {
+  const response = await api.put<User>('/api/auth/me', data);
+  return response.data;
+};

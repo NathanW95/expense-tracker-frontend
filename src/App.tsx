@@ -4,6 +4,7 @@ import { Login } from './pages/Login';
 import { Register } from './pages/Register';
 import { ForgotPassword } from './pages/ForgotPassword';
 import { ResetPassword } from './pages/ResetPassword';
+import { Profile } from './pages/Profile';
 import { ExpenseList } from './components/ExpenseList';
 import { ExpenseForm } from './components/ExpenseForm';
 import './App.css';
@@ -21,6 +22,7 @@ function App() {
 
     if (path === '/forgot-password') return 'forgot-password';
     if (path === '/reset-password' || search.includes('token=')) return 'reset-password';
+    if (path === '/profile') return 'profile';
     return 'login';
   });
 
@@ -41,6 +43,11 @@ function App() {
   // Show reset password page
   if (currentPage === 'reset-password') {
     return <ResetPassword />;
+  }
+
+  // Show profile page
+  if (currentPage === 'profile') {
+    return <Profile />;
   }
 
   if (!isAuthenticated) {
@@ -131,15 +138,32 @@ function App() {
         <ExpenseList key={refreshKey} />
       </div>
 
-      <footer style={{
-        width: '100%',
-        maxWidth: '1200px',
-        padding: '20px',
-        marginTop: '40px',
-        borderTop: '2px solid #333',
-        display: 'flex',
-        justifyContent: 'center',
-      }}>
+      <footer
+        style={{
+          width: '100%',
+          maxWidth: '1200px',
+          padding: '20px',
+          marginTop: '40px',
+          borderTop: '2px solid #333',
+          display: 'flex',
+          justifyContent: 'center',
+          gap: '10px',
+        }}
+      >
+        <button
+          onClick={() => (window.location.pathname = '/profile')}
+          style={{
+            padding: '10px 40px',
+            backgroundColor: '#6c757d',
+            color: 'white',
+            border: 'none',
+            borderRadius: '8px',
+            cursor: 'pointer',
+            fontWeight: 'bold',
+          }}
+        >
+          Profile
+        </button>
         <button
           onClick={handleLogout}
           style={{
