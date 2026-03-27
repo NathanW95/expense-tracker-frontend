@@ -28,7 +28,7 @@ export function ExpenseForm({ onSuccess, onCancel, editExpense }: ExpenseFormPro
       ? new Date(editExpense.expenseDate).toISOString().split('T')[0]
       : new Date().toISOString().split('T')[0],
   });
-  const [receiptUrl, setReceiptUrl] = useState<string | null>(null);
+  const [receiptUrl, setReceiptUrl] = useState<string | null>(editExpense?.receiptUrl || null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
